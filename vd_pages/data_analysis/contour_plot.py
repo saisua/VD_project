@@ -32,10 +32,16 @@ def render(
         logging.debug(f"Selected z-axis: {selected_z}")
 
     if selected_x == "index" and "index" not in data.collect_schema().names():
+        selected_cols = {selected_y}
+        if selected_z:
+            selected_cols.add(selected_z)
+
         logging.debug("Adding index column as x-axis")
         data = data\
-            .select(pl.col(selected_y))\
-            .filter(pl.col(selected_y).is_not_null())\
+            .select(*map(pl.col, selected_cols))\
+            .filter(
+                pl.col(selected_y).is_not_null()
+            )\
             .with_columns(
                 pl.arange(0, pl.count()).alias("index")
             )
