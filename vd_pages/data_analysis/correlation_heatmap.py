@@ -5,6 +5,7 @@ import os
 import polars as pl
 import streamlit as st
 import altair as alt
+import pandas as pd
 
 
 logging.basicConfig(level=logging.DEBUG)
@@ -19,9 +20,11 @@ def render(data: pl.LazyFrame):
 
     logging.debug("Calculating correlation matrix")
     data = data.select(pl.selectors.numeric())
-    corr_matrix = data.collect().corr()
+    data: pd.DataFrame = data.collect().to_pandas()
 
-    print(corr_matrix.columns)
+    corr_matrix = pl.DataFrame(
+        data.astype(float, errors='ignore').corr()
+    )
 
     corr_matrix = corr_matrix.with_columns(
         level_0=pl.Series(
@@ -37,9 +40,6 @@ def render(data: pl.LazyFrame):
             value_name='correlation'
         )\
         .to_pandas()
-
-    print(corr_matrix.columns)
-    print(corr_matrix)
 
     logging.debug("Creating correlation heatmap")
     try:

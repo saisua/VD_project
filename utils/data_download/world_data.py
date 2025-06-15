@@ -82,8 +82,15 @@ def load_data(
                                             f"from {sub_member}"
                                         )
                                         df = pl.read_csv(
-                                            sub_zip_ref.open(sub_member)
+                                            sub_zip_ref.open(sub_member),
+                                            null_values=[
+                                                'na',
+                                                'NA',
+                                                "NaN",
+                                                "nan"
+                                            ]
                                         )
+
                                         lazy_frames[df_name] = df.lazy()
                                         logger.info(
                                             f"Loaded {len(df)} records "
