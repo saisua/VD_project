@@ -33,14 +33,13 @@ def render(
                 pl.arange(0, pl.count()).alias("index")
             )
     else:
-        logging.debug(f"Selecting and sorting by {selected_x}")
+        logging.debug(f"Selecting {selected_x}")
         data = data\
             .select(*map(pl.col, {selected_x, selected_y}))\
             .filter(
                 pl.col(selected_x).is_not_null(),
                 pl.col(selected_y).is_not_null()
-            )\
-            .sort(selected_x)
+            )
 
     data = data.collect()
     if sample_rows and len(data) > sample_rows:
@@ -67,22 +66,26 @@ def render(
         )
 
         if fit_p:
-            model = lm.LinearRegression()
-            model.fit(
-                data[selected_x].values.reshape(-1, 1),
-                data[selected_y].values.reshape(-1, 1)
-            )
-            data["p_line"] = model.predict(
-                data[selected_x].values.reshape(-1, 1)
-            )
-
-            p_line = alt.Chart(data)\
-                .mark_line(color='red', strokeWidth=2, strokeDash=[5, 3])\
-                .encode(
-                    x=selected_x,
-                    y="p_line"
+            try:
+                model = lm.LinearRegression()
+                model.fit(
+                    data[selected_x].values.reshape(-1, 1),
+                    data[selected_y].values.reshape(-1, 1)
                 )
-            chart = chart + p_line
+                data["p_line"] = model.predict(
+                    data[selected_x].values.reshape(-1, 1)
+                )
+
+                p_line = alt.Chart(data)\
+                    .mark_line(color='red', strokeWidth=2, strokeDash=[5, 3])\
+                    .encode(
+                        x=selected_x,
+                        y="p_line"
+                    )
+                chart = chart + p_line
+            except Exception as e:
+                logging.exception("Linear regression failed")
+                st.error(f"Linear regression failed: {e}")
 
         chart = chart.properties(
             height=DEFAULT_PLOT_HEIGHT,

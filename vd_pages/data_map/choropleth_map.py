@@ -1,19 +1,15 @@
 import tempfile
 from typing import Optional
 import logging
-# import tempfile
 
 import streamlit as st
 import altair as alt
 import polars as pl
 import geopandas as gpd
-import pyarrow as pa
-import pandas as pd
 
 from .base_map import (
     BaseMap,
     DEFAULT_PLOT_HEIGHT,
-    # DEFAULT_MAX_ROWS,
     DEFAULT_PLOT_WIDTH,
 )
 
